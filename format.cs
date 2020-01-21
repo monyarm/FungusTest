@@ -33,7 +33,7 @@ public class Program
 			luaCode.AddRange(ProcessConversation());
 			luaCode.Add(x.Trim().Trim('$').Trim());	
 		}
-		else if (Regex.Match(x.Trim(), @"^menu\:\b").Success || Regex.Match(x, @"\t+.*").Success) {
+		else if (Regex.Match(x.Trim(), @"^menu\:\b").Success || Regex.Match(x.Trim(), @"^""[\w $]*""").Success) {
 			luaCode.AddRange(ProcessConversation());
 			menuCode.Add(x);
 		}

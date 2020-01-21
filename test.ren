@@ -6,7 +6,7 @@ person: "line"
 $ lua code
 
 menu:
-	"Option 1"
+	"Option 1":
 		$ lua code
-	"Option 2"
+	"Option 2":
 		$ lua code
