@@ -1,0 +1,12 @@
+char: "text"
+person: "line"
+
+-- comment
+
+$ lua code
+
+menu:
+	"Option 1"
+		$ lua code
+	"Option 2"
+		$ lua code
