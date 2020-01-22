@@ -2,6 +2,9 @@ char: "text"
 person: "line"
 
 -- comment
+# comment
+; comment
+// comment
 
 $ lua code
 
@@ -16,4 +19,13 @@ $ lua code
 
 @menuend
 
-
+::label::
+label test
+jump label
+goto test
+clear
+clearmenu
+hide Ruby
+show "Ruby" "happy" "offscreen right" "right"
+show "Ruby" "happy" 
+person: "line" "test.wav"
