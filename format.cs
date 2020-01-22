@@ -10,45 +10,19 @@ using System.Text.RegularExpressions;
 public class Program
 {
 	
-
-	static List<String> conversationCode = new List<String>();
-
-	static List<String> menuCode = new List<String>();
-    public static void Main(string[] args)
-    {
 	const string ConversationTextBodyRegex = @"((?<sayParams>[\w ""><.'-_]*?):)? *""(?<text>.*)""\r*(\n|$)";
+    	const string ChoiceRegex = @"(@choice )""([\w ]*)"" ?(?:if \((.+)\))?";
+public static void Main(string[] args)
+    {
+
 
 	List<String> lines = File.ReadLines(args[0]).ToList();
 
 	lines.ForEach(x => Console.WriteLine(x));
 
 	List<String> luaCode = new List<String>();
-
-	lines.ForEach(x => {
-			
-
-		
-		if (Regex.Match(x.Trim(), @"^\-\-\b").Success) {}
-		else if (Regex.Match(x.Trim(), @"^\$\ \b").Success) {
-			luaCode.AddRange(ProcessConversation());
-			luaCode.Add(x.Trim().Trim('$').Trim());	
-		}
-		else if (Regex.Match(x.Trim(), @"^menu\:\b").Success || Regex.Match(x.Trim(), @"^""[\w $]*""").Success) {
-			luaCode.AddRange(ProcessConversation());
-			menuCode.Add(x);
-		}
-		else if (Regex.Match(x.Trim(), ConversationTextBodyRegex).Success) {
-			luaCode.AddRange(ProcessMenu());
-			conversationCode.Add(x);			
-		}
-		else {
-			luaCode.AddRange(ProcessConversation());
-			luaCode.AddRange(ProcessMenu());
-		}
-		
-
-	});
-
+	
+	luaCode = Parse(lines);
 
 	Console.WriteLine(" ");
 	Console.WriteLine(" ");
@@ -58,29 +32,80 @@ public class Program
 
 	luaCode.ForEach(x => Console.WriteLine(x));
     }
+	public static List<String> Parse(List<String> lines) {
 
-	public static List<String> ProcessMenu() {
-		List<String> tempArr = new List<String>();
-		if (menuCode.Count != 0) {
+	List<String> luaCode = new List<String>();
+	var i = 0;
+	for ( i = 0; i< lines.Count; i++){
+		var x = lines[i];
+                    		Console.WriteLine(lines[i].Trim());
+		if (Regex.Match(x.Trim(), @"^\-\-\b").Success) {}
 		
-			//TEMP
-			tempArr.Add("//Temp Menu");
-			tempArr.AddRange(menuCode);
-			tempArr.Add("//Temp Menu");
+		else if (x.Trim() == "@menu") {
+
+            		var menuLines = new List<String>();
+			menuLines.Add(x.Trim());
+			while (lines[i+1].Trim() != "@menuend")
+                	{
+                    		menuLines.Add(lines[i+1].Trim());
+				i++;
+                	}
+			menuLines.Add(lines[i+1].Trim());
+			i++;
+			luaCode.AddRange(ParseMenu(menuLines));
 		}
-		return tempArr;
+		else if (Regex.Match(x.Trim(), ConversationTextBodyRegex).Success) {
+			luaCode.Add("conversation [[");
+
+			luaCode.Add(x);
+
+			while (Regex.Match(lines[i+1].Trim(), ConversationTextBodyRegex).Success){
+				luaCode.Add(lines[i+1]);
+				i++;		
+			}
+
+			luaCode.Add("]]");
+			luaCode.Add("");			
+		}
+		else if (Regex.Match(x.Trim(), @"^\$\ \b").Success) {
+			luaCode.Add(x.Trim().Trim('$').Trim());
+			luaCode.Add("");	
+		}
+		
+
+		}
+		return luaCode;
 	}
 
-	public static List<String> ProcessConversation() {
-		List<String> tempArr = new List<String>();
-		if (conversationCode.Count != 0) {
-			tempArr.Add("conversation [[");
-			tempArr.AddRange(conversationCode);
-			tempArr.Add("]]");
+	public static List<String> ParseMenu(List<String> lines) {
+		var menuLines = new List<String>();
+		var i = 0;
+		for ( i = 0; i< lines.Count; i++){
+			var x = lines[i];
+			var regMatch = Regex.Match(x, ChoiceRegex);
+			if (regMatch.Success) {
+				
+				
+				var choiceFunction = new List<String>();
+				while (i+1 <lines.Count  && !lines[i+1].Trim().StartsWith("@choice")){
+					Console.WriteLine(lines[i]);
+					choiceFunction.Add(lines[i+1]);
+					i++;		
+				}
+				string funcName = Regex.Replace(regMatch.Groups[2].Value, @"[^\w]", string.Empty);
+				string funcString = "function "+funcName+" ()\n\n"+string.Join("\n", Parse(choiceFunction))+"\nend";
+				menuLines.Add(funcString);
+				menuLines.Add("");
+
+				string menuFunction = ("menu("+regMatch.Groups[2].Value+"," +regMatch.Groups[2].Value+","+regMatch.Groups[3].Value +")").Replace(",)",")");
+				menuLines.Add(menuFunction);
+				menuLines.Add("");
+			}
 		}
-		conversationCode.Clear();
-		return tempArr;
+
+		return menuLines;	
 	}
+	
 
 
 	

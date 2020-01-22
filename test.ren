@@ -5,8 +5,15 @@ person: "line"
 
 $ lua code
 
-menu:
-	"Option 1":
+@menu
+	@choice "Option 1"
 		$ lua code
-	"Option 2":
+		char: "text"
+		person: "line"
+
+	@choice "Option 2" if (true)
 		$ lua code
+
+@menuend
+
+
