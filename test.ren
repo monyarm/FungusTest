@@ -8,14 +8,21 @@ person: "line"
 
 $ lua code
 
-@menu
-	@choice "Option 1"
-		$ lua code
-		char: "text"
-		person: "line"
 
-	@choice "Option 2" if (true)
-		$ lua code
+@menu
+        @choice "Option 1"
+                $ lua code
+                char: "text"
+                person: "line"
+
+        @choice "Option 2" if (true)
+                $ lua code
+
+		@menu
+			@choice "Option 3"
+				$ print "f"
+
+		@menuend
 
 @menuend
 
